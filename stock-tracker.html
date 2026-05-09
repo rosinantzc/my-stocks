@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>พอร์ตหุ้นของฉัน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;font-size:15px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:0.5px solid #2a2d3a;background:#151820;position:sticky;top:0;z-index:10}
+.logo{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px;color:#e8eaf0}
+.topbar-right{font-size:13px;color:#8891a8}
+.main{max-width:1100px;margin:0 auto;padding:24px 20px}
+.header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.header-row h1{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px}
+.add-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:#378ADD;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:500}
+.add-btn:hover{opacity:0.88}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:#151820;border:0.5px solid #2a2d3a;border-radius:12px;padding:16px}
+.stat-label{font-size:12px;color:#8891a8;margin-bottom:6px}
+.stat-value{font-size:23px;font-weight:600;line-height:1.2}
+.up{color:#1D9E75}.down{color:#E24B4A}
+.form-card{background:#151820;border:0.5px solid #378ADD40;border-radius:14px;padding:20px;margin-bottom:24px;display:none}
+.form-card.open{display:block}
+.form-card h3{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.field label{display:block;font-size:12px;color:#8891a8;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;background:#0f1117;border:0.5px solid #2a2d3a;color:#e8eaf0;border-radius:8px;padding:8px 10px;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.15s}
+.field input:focus,.field select:focus{border-color:#378ADD}
+.field select option{background:#151820}
+.form-actions{display:flex;gap:8px}
+.btn-save{padding:8px 20px;background:#378ADD;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:500}
+.btn-save:hover{opacity:0.88}
+.btn-cancel{padding:8px 14px;background:transparent;color:#8891a8;border:0.5px solid #2a2d3a;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px}
+.btn-cancel:hover{background:#1e2130;color:#e8eaf0}
+.content-grid{display:grid;grid-template-columns:1fr 260px;gap:16px}
+@media(max-width:700px){.content-grid{grid-template-columns:1fr}}
+.card{background:#151820;border:0.5px solid #2a2d3a;border-radius:14px;padding:20px}
+.card-title{font-size:11px;color:#8891a8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;font-weight:500}
+.tab-row{display:flex;gap:4px;margin-bottom:14px}
+.tab{padding:5px 12px;font-size:13px;border:0.5px solid transparent;border-radius:8px;cursor:pointer;background:transparent;color:#8891a8;font-family:inherit;transition:all 0.15s}
+.tab.active{border-color:#2a2d3a;color:#e8eaf0;background:#1e2130}
+.tab:hover:not(.active){color:#e8eaf0}
+table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
+th{text-align:left;font-size:11px;font-weight:500;color:#8891a8;padding:0 10px 10px;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap}
+td{padding:10px;border-top:0.5px solid #2a2d3a;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:hover td{background:#1a1d29}
+.ticker{font-weight:600;font-size:14px;font-family:monospace;color:#378ADD}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.badge.up{background:#0d3d2a;color:#1D9E75}
+.badge.down{background:#3d1515;color:#E24B4A}
+.del-btn{background:transparent;border:none;cursor:pointer;color:#8891a8;padding:4px 6px;border-radius:4px;opacity:0.5;font-size:15px}
+.del-btn:hover{opacity:1;color:#E24B4A}
+.edit-btn{background:transparent;border:none;cursor:pointer;color:#8891a8;padding:4px 6px;border-radius:4px;opacity:0.5;font-size:15px}
+.edit-btn:hover{opacity:1;color:#EF9F27}
+.empty{text-align:center;padding:3rem;color:#8891a8;font-size:14px;line-height:2}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#8891a8;margin-top:6px}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.toast{position:fixed;bottom:24px;right:24px;background:#1D9E75;color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+.toast.err{background:#E24B4A}
+.export-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border:0.5px solid #2a2d3a;border-radius:8px;background:transparent;color:#8891a8;cursor:pointer;font-size:13px;font-family:inherit}
+.export-btn:hover{background:#1e2130;color:#e8eaf0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){
+  .topbar{padding:12px 16px}
+  .main{padding:16px}
+  th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <i class="ti ti-chart-candle" style="color:#378ADD"></i>
+    พอร์ตหุ้นของฉัน
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="export-btn" onclick="exportCSV()">
+      <i class="ti ti-download"></i> Export CSV
+    </button>
+    <span class="topbar-right" id="last-update"></span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="header-row">
+    <h1><i class="ti ti-briefcase" style="color:#378ADD"></i> พอร์ตโฟลิโอ</h1>
+    <button class="add-btn" onclick="openForm()">
+      <i class="ti ti-plus"></i> เพิ่มรายการ
+    </button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">ต้นทุนรวม</div><div class="stat-value" id="s-cost">฿0</div></div>
+    <div class="stat"><div class="stat-label">มูลค่าปัจจุบัน</div><div class="stat-value" id="s-val">฿0</div></div>
+    <div class="stat"><div class="stat-label">กำไร / ขาดทุน</div><div class="stat-value" id="s-pnl">฿0</div></div>
+    <div class="stat"><div class="stat-label">จำนวนรายการ</div><div class="stat-value" id="s-pos">0</div></div>
+  </div>
+
+  <!-- Add / Edit Form -->
+  <div class="form-card" id="form-card">
+    <h3><i class="ti ti-pencil" style="color:#378ADD"></i> <span id="form-title">บันทึกการซื้อหุ้น</span></h3>
+    <input type="hidden" id="f-id">
+    <div class="form-grid">
+      <div class="field"><label>Ticker *</label><input id="f-ticker" placeholder="AOT, PTT, AAPL..." oninput="this.value=this.value.toUpperCase()"></div>
+      <div class="field"><label>ชื่อบริษัท</label><input id="f-name" placeholder="ท่าอากาศยานไทย..."></div>
+      <div class="field"><label>จำนวนหุ้น *</label><input id="f-shares" type="number" min="1" step="1" placeholder="100"></div>
+      <div class="field"><label>ราคาซื้อ / หุ้น (฿) *</label><input id="f-buyprice" type="number" step="0.01" placeholder="75.50"></div>
+      <div class="field"><label>ราคาปัจจุบัน / หุ้น (฿)</label><input id="f-curprice" type="number" step="0.01" placeholder="80.00"></div>
+      <div class="field"><label>วันที่ซื้อ</label><input id="f-date" type="date"></div>
+      <div class="field"><label>ตลาด</label>
+        <select id="f-market">
+          <option value="SET">SET (ไทย)</option>
+          <option value="mai">mai (ไทย)</option>
+          <option value="NASDAQ">NASDAQ (US)</option>
+          <option value="NYSE">NYSE (US)</option>
+          <option value="อื่นๆ">อื่นๆ</option>
+        </select>
+      </div>
+      <div class="field"><label>หมายเหตุ</label><input id="f-note" placeholder="เหตุผล / แผน..."></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-save" onclick="saveEntry()">บันทึก</button>
+      <button class="btn-cancel" onclick="closeForm()">ยกเลิก</button>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Table -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="tab-row" style="margin-bottom:0">
+          <button class="tab active" onclick="setTab('all',this)">ทั้งหมด</button>
+          <button class="tab" onclick="setTab('profit',this)">กำไร</button>
+          <button class="tab" onclick="setTab('loss',this)">ขาดทุน</button>
+        </div>
+        <span id="row-count" style="font-size:12px;color:#8891a8"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th style="width:90px">Ticker</th>
+            <th style="width:130px">บริษัท</th>
+            <th style="width:70px;text-align:right">หุ้น</th>
+            <th style="width:90px;text-align:right">ราคาซื้อ</th>
+            <th style="width:90px;text-align:right">ปัจจุบัน</th>
+            <th style="width:105px;text-align:right">กำไร/ขาดทุน</th>
+            <th style="width:60px;text-align:right">%</th>
+            <th style="width:56px"></th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pie Chart -->
+    <div class="card">
+      <div class="card-title">สัดส่วนพอร์ต</div>
+      <div style="position:relative;width:100%;aspect-ratio:1;max-width:180px;margin:0 auto">
+        <canvas id="pie" role="img" aria-label="สัดส่วนหุ้นในพอร์ต">ไม่มีข้อมูล</canvas>
+      </div>
+      <div id="legend" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const COLORS = ['#378ADD','#1D9E75','#EF9F27','#D4537E','#7F77DD','#D85A30','#E24B4A','#639922','#8891a8'];
+const KEY = 'stock_entries_v2';
+let entries = [];
+let pieChart = null;
+let currentTab = 'all';
+let editingId = null;
+
+function load() {
+  try { entries = JSON.parse(localStorage.getItem(KEY)) || []; } catch(e) { entries = []; }
+  render();
+}
+
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(entries));
+  const now = new Date().toLocaleString('th-TH');
+  document.getElementById('last-update').textContent = 'บันทึกเมื่อ ' + now;
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err?' err':'');
+  setTimeout(()=>t.className='toast',2500);
+}
+
+function openForm(id=null) {
+  editingId = id;
+  const f = document.getElementById('form-card');
+  f.classList.add('open');
+  document.getElementById('form-title').textContent = id ? 'แก้ไขรายการ' : 'บันทึกการซื้อหุ้น';
+  if (id) {
+    const e = entries.find(x=>x.id===id);
+    if (!e) return;
+    document.getElementById('f-ticker').value = e.ticker;
+    document.getElementById('f-name').value = e.name;
+    document.getElementById('f-shares').value = e.shares;
+    document.getElementById('f-buyprice').value = e.buyPrice;
+    document.getElementById('f-curprice').value = e.curPrice;
+    document.getElementById('f-date').value = e.date;
+    document.getElementById('f-market').value = e.market;
+    document.getElementById('f-note').value = e.note;
+  } else {
+    ['f-ticker','f-name','f-shares','f-buyprice','f-curprice','f-note'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-market').value = 'SET';
+  }
+  f.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeForm() {
+  document.getElementById('form-card').classList.remove('open');
+  editingId = null;
+}
+
+function saveEntry() {
+  const ticker = document.getElementById('f-ticker').value.trim().toUpperCase();
+  const shares = parseFloat(document.getElementById('f-shares').value);
+  const buyPrice = parseFloat(document.getElementById('f-buyprice').value);
+  const curPrice = parseFloat(document.getElementById('f-curprice').value);
+  if (!ticker || !shares || !buyPrice || isNaN(shares) || isNaN(buyPrice)) {
+    showToast('กรุณากรอก Ticker, จำนวนหุ้น และราคาซื้อ', true); return;
+  }
+  const entry = {
+    id: editingId || Date.now(),
+    ticker,
+    name: document.getElementById('f-name').value.trim(),
+    shares, buyPrice,
+    curPrice: isNaN(curPrice) ? buyPrice : curPrice,
+    date: document.getElementById('f-date').value,
+    market: document.getElementById('f-market').value,
+    note: document.getElementById('f-note').value.trim(),
+  };
+  if (editingId) {
+    const idx = entries.findIndex(e=>e.id===editingId);
+    if (idx >= 0) entries[idx] = entry;
+  } else {
+    entries.unshift(entry);
+  }
+  save(); closeForm(); render();
+  showToast(editingId ? 'แก้ไขสำเร็จ ✓' : 'เพิ่มรายการสำเร็จ ✓');
+}
+
+function deleteEntry(id) {
+  const e = entries.find(x=>x.id===id);
+  if (!e || !confirm('ลบ ' + e.ticker + ' ออกจากพอร์ต?')) return;
+  entries = entries.filter(x=>x.id!==id);
+  save(); render();
+  showToast('ลบรายการแล้ว');
+}
+
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function exportCSV() {
+  if (entries.length === 0) { showToast('ไม่มีข้อมูลให้ export', true); return; }
+  const rows = [['Ticker','ชื่อบริษัท','จำนวนหุ้น','ราคาซื้อ','ราคาปัจจุบัน','ต้นทุนรวม','มูลค่าปัจจุบัน','กำไร/ขาดทุน','%','วันที่ซื้อ','ตลาด','หมายเหตุ']];
+  entries.forEach(e=>{
+    const cost = e.shares*e.buyPrice, val=e.shares*e.curPrice, pnl=val-cost, pct=((e.curPrice-e.buyPrice)/e.buyPrice*100).toFixed(2);
+    rows.push([e.ticker,e.name,e.shares,e.buyPrice,e.curPrice,cost.toFixed(2),val.toFixed(2),pnl.toFixed(2),pct,e.date,e.market,e.note]);
+  });
+  const csv = '\uFEFF' + rows.map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download = 'portfolio_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  showToast('Export CSV สำเร็จ ✓');
+}
+
+const fmt = n => Number(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtI = n => Number(n).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+function render() {
+  const totalCost = entries.reduce((s,e)=>s+e.shares*e.buyPrice,0);
+  const totalVal  = entries.reduce((s,e)=>s+e.shares*e.curPrice,0);
+  const pnl = totalVal - totalCost;
+  const pct = totalCost > 0 ? (pnl/totalCost*100) : 0;
+
+  document.getElementById('s-cost').textContent = '฿' + fmtI(totalCost);
+  document.getElementById('s-val').textContent  = '฿' + fmtI(totalVal);
+  const pnlEl = document.getElementById('s-pnl');
+  pnlEl.textContent = (pnl>=0?'+':'') + '฿' + fmtI(pnl) + ' (' + pct.toFixed(1) + '%)';
+  pnlEl.className = 'stat-value ' + (pnl>=0?'up':'down');
+  document.getElementById('s-pos').textContent = entries.length;
+
+  let rows = entries;
+  if (currentTab==='profit') rows = entries.filter(e=>e.curPrice>=e.buyPrice);
+  if (currentTab==='loss')   rows = entries.filter(e=>e.curPrice<e.buyPrice);
+  document.getElementById('row-count').textContent = rows.length + ' รายการ';
+
+  const tbody = document.getElementById('tbody');
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty">
+      <i class="ti ti-inbox" style="font-size:32px;display:block;margin:0 auto 8px;opacity:0.4"></i>
+      ${currentTab==='all' ? 'ยังไม่มีรายการ — กดปุ่ม "เพิ่มรายการ" เพื่อเริ่ม' : 'ไม่มีรายการในหมวดนี้'}
+    </td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map(e => {
+      const p   = (e.curPrice - e.buyPrice) * e.shares;
+      const pc  = ((e.curPrice - e.buyPrice) / e.buyPrice * 100).toFixed(1);
+      const up  = e.curPrice >= e.buyPrice;
+      const sign = up ? '+' : '';
+      return `<tr>
+        <td>
+          <span class="ticker">${e.ticker}</span>
+          <span style="display:block;font-size:11px;color:#8891a8">${e.market}</span>
+        </td>
+        <td style="font-size:13px;color:#8891a8" title="${e.name||''}">${e.name||'-'}</td>
+        <td style="text-align:right">${fmtI(e.shares)}</td>
+        <td style="text-align:right;font-family:monospace;font-size:13px">฿${fmt(e.buyPrice)}</td>
+        <td style="text-align:right;font-family:monospace;font-size:13px">฿${fmt(e.curPrice)}</td>
+        <td style="text-align:right;font-family:monospace;font-size:13px;color:${up?'#1D9E75':'#E24B4A'}">${sign}฿${fmt(p)}</td>
+        <td style="text-align:right"><span class="badge ${up?'up':'down'}">${sign}${pc}%</span></td>
+        <td style="text-align:right">
+          <button class="edit-btn" onclick="openForm(${e.id})" title="แก้ไข"><i class="ti ti-pencil"></i></button>
+          <button class="del-btn"  onclick="deleteEntry(${e.id})" title="ลบ"><i class="ti ti-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  renderPie();
+}
+
+function renderPie() {
+  const canvas = document.getElementById('pie');
+  const legend = document.getElementById('legend');
+  if (entries.length === 0) {
+    if (pieChart) { pieChart.destroy(); pieChart = null; }
+    legend.innerHTML = '<div style="font-size:12px;color:#8891a8;text-align:center;margin-top:20px;line-height:2">ยังไม่มีข้อมูล<br>เพิ่มหุ้นเพื่อดูสัดส่วน</div>';
+    return;
+  }
+  const grouped = {};
+  entries.forEach(e => { const c=e.shares*e.buyPrice; grouped[e.ticker]=(grouped[e.ticker]||0)+c; });
+  const labels = Object.keys(grouped);
+  const data   = Object.values(grouped);
+  const total  = data.reduce((s,v)=>s+v,0);
+  const colors = labels.map((_,i)=>COLORS[i%COLORS.length]);
+
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(canvas, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: true, cutout: '65%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + (ctx.parsed/total*100).toFixed(1) + '%' } }
+      }
+    }
+  });
+  legend.innerHTML = labels.map((l,i) =>
+    `<div class="legend-item">
+      <span class="legend-dot" style="background:${colors[i]}"></span>
+      <span style="flex:1">${l}</span>
+      <span style="color:#e8eaf0;font-weight:600">${(data[i]/total*100).toFixed(1)}%</span>
+    </div>`
+  ).join('');
+}
+
+load();
+</script>
+</body>
+</html>
